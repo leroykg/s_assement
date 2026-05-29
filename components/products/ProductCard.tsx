@@ -133,8 +133,8 @@ const styles = StyleSheet.create({
   productPrice: {
     color: Colors.foreground,
     fontSize: 17,
-    fontFamily: 'NotoSans_400Regular',
-    fontWeight: '800',
+    fontFamily: 'NotoSans_700Black',
+    fontWeight: '700',
     letterSpacing: 0,
   },
   stockText: {
