@@ -11,7 +11,7 @@ export const Colors = {
   mutedForeground: '#627067',
   accent: '#C35A20',
   accentForeground: '#FFFFFF',
-  destructive: '#A04444',
+  destructive: '#c22d2d',
   destructiveForeground: '#FFFFFF',
   border: '#DEE6DD',
   surface: '#F4F6F8',
@@ -28,6 +28,6 @@ export const Colors = {
   badge: '#C35A20',
   badgeForeground: '#FFFFFF',
   shadow: '#17211B',
-};
+} as const;
 
 export default Colors;

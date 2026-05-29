@@ -6,13 +6,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { Colors } from '../constants/colors';
-import products from '../data/products.json';
 import { formatCurrency } from '../helpers/basket';
+import { getProductById } from '../helpers/products';
 import useBasketStore from '../stores/basketStore';
 import { ThemedText } from '../components/ui/ThemedText';
-import type { Product } from '../types/product';
-
-const productList = products as Product[];
+import ProductQuantityControl from '../components/products/ProductQuantityControl';
 
 export default function ProductModal() {
   const { name } = useLocalSearchParams<{ name?: string | string[] }>();
@@ -21,7 +19,7 @@ export default function ProductModal() {
   const addProduct = useBasketStore((state) => state.addProduct);
   const decreaseProduct = useBasketStore((state) => state.decreaseProduct);
   const productName = Array.isArray(name) ? name[0] : name;
-  const product = productList.find((item) => item.name === productName);
+  const product = getProductById(productName);
   const inBasket = product ? items[product.name]?.quantity || 0 : 0;
   const maxQuantity = product ? product.quantity_available : 0;
   const soldOut = product ? product.quantity_available === 0 : false;
@@ -67,8 +65,8 @@ export default function ProductModal() {
 
   if (!product) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <StatusBar style="dark" />
+      <View style={[styles.container, { marginTop: insets.top }]}>
+        <StatusBar style="light" />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Close product details"
@@ -85,11 +83,12 @@ export default function ProductModal() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="dark" />
+    <View style={[styles.container, { marginTop: insets.top }]}>
+      <StatusBar style="light" />
       <ScrollView
         bounces={false}
         contentContainerStyle={[
+          { paddingBottom: insets.bottom + 32 },
           styles.content,
         ]}
         showsVerticalScrollIndicator={false}
@@ -116,45 +115,15 @@ export default function ProductModal() {
         </View>
 
         <View style={styles.actionsRow}>
-          <View style={styles.quantityControl}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Remove one ${product.name}`}
-              disabled={selectedQuantity <= 1}
-              onPress={decreaseSelectedQuantity}
-              style={({ pressed }) => [
-                styles.quantityAction,
-                selectedQuantity <= 1 && styles.quantityActionDisabled,
-                pressed && styles.pressed,
-              ]}
-            >
-              <MaterialCommunityIcons
-                name="minus"
-                size={28}
-                color={selectedQuantity <= 1 ? Colors.disabledForeground : Colors.primary}
-              />
-            </Pressable>
-            <View style={styles.quantityBadge}>
-              <ThemedText style={styles.quantityText}>{selectedQuantity}</ThemedText>
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Add one ${product.name}`}
-              disabled={soldOut || atLimit}
-              onPress={increaseSelectedQuantity}
-              style={({ pressed }) => [
-                styles.quantityAction,
-                (soldOut || atLimit) && styles.quantityActionDisabled,
-                pressed && styles.pressed,
-              ]}
-            >
-              <MaterialCommunityIcons
-                name="plus"
-                size={28}
-                color={soldOut || atLimit ? Colors.disabledForeground : Colors.primary}
-              />
-            </Pressable>
-          </View>
+          <ProductQuantityControl
+            decreaseDisabled={selectedQuantity <= 1}
+            increaseDisabled={soldOut || atLimit}
+            onDecrease={decreaseSelectedQuantity}
+            onIncrease={increaseSelectedQuantity}
+            productName={product.name}
+            quantity={selectedQuantity}
+            variant="large"
+          />
 
           <Pressable
             accessibilityRole="button"
@@ -180,6 +149,8 @@ export default function ProductModal() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.card,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     flex: 1,
   },
   content: {
@@ -192,6 +163,7 @@ const styles = StyleSheet.create({
     height: 52,
     justifyContent: 'center',
     width: 52,
+    marginRight: -12,
   },
   imageWrap: {
     alignItems: 'center',
@@ -234,41 +206,6 @@ const styles = StyleSheet.create({
     gap: 14,
     marginTop: 30,
   },
-  quantityControl: {
-    alignItems: 'center',
-    backgroundColor: Colors.disabled,
-    borderRadius: 8,
-    flex: 1,
-    flexDirection: 'row',
-    height: 50,
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-  },
-  quantityAction: {
-    alignItems: 'center',
-    height: 50,
-    justifyContent: 'center',
-    width: 50,
-  },
-  quantityActionDisabled: {
-    opacity: 0.5,
-  },
-  quantityBadge: {
-    alignItems: 'center',
-    backgroundColor: Colors.primary,
-    borderRadius: 24,
-    height: 34,
-    justifyContent: 'center',
-    minWidth: 34,
-    paddingHorizontal: 12,
-  },
-  quantityText: {
-    color: Colors.primaryForeground,
-    fontSize: 16,
-    fontWeight: '900',
-    letterSpacing: 0,
-    lineHeight: 28,
-  },
   addBasketButton: {
     alignItems: 'center',
     backgroundColor: Colors.secondary,
@@ -301,6 +238,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
   },
   pressed: {
-    opacity: 0.72,
+    opacity: 0.70,
   },
 });

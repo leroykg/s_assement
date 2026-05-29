@@ -5,7 +5,7 @@ export default function RootLayout() {
     <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="search" options={{ title: 'Search' }} />
-        <Stack.Screen name="product" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="product" options={{ presentation: 'containedTransparentModal' }} />
       </Stack>
   );
 }

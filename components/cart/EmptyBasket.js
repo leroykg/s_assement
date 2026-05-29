@@ -1,8 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Button } from 'react-native-paper';
 import { Colors } from '../../constants/colors';
+import Button from '../../components/ui/Button';
 
 export default function EmptyBasket({ onBrowseProducts }) {
   return (
@@ -13,11 +13,9 @@ export default function EmptyBasket({ onBrowseProducts }) {
       <Text style={styles.emptyTitle}>Your basket is empty</Text>
       <Text style={styles.emptyCopy}>Add products from the shop tab to start your order.</Text>
       <Button
-        mode="contained"
-        compact={false}
         onPress={onBrowseProducts}
         style={styles.emptyButton}
-        labelStyle={styles.primaryButtonLabel}
+        textStyle={styles.primaryButtonLabel}
       >
         Browse products
       </Button>
@@ -59,14 +57,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptyButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: 8,
     marginTop: 20,
   },
   primaryButtonLabel: {
-    color: Colors.primaryForeground,
     fontSize: 14,
     fontWeight: '800',
-    letterSpacing: 0,
   },
 });

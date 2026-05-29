@@ -21,7 +21,7 @@ export default function DeliveryProgress({ basketTotal, freeDelivery }) {
           {freeDelivery ? 'Free delivery unlocked' : `${formatCurrency(remainingToDelivery)} to free delivery`}
         </Text>
         <MaterialCommunityIcons
-          name={freeDelivery ? 'party-popper' : 'bike-fast'}
+          name={freeDelivery ? 'star' : 'truck-fast'}
           size={22}
           color={Colors.primary}
         />

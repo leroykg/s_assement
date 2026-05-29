@@ -1,5 +1,5 @@
 import { ExpoRoot } from "expo-router";
-import { useFonts, NotoSans_400Regular, NotoSans_700Bold, NotoSans_600SemiBold } from '@expo-google-fonts/noto-sans';
+import { useFonts, NotoSans_400Regular, NotoSans_700Bold } from '@expo-google-fonts/noto-sans';
 
 export default function App() {
   
@@ -8,7 +8,7 @@ export default function App() {
   });
 
   if (!fontsLoaded) {
-    return null; // Or a loading spinner
+    return null;
   }
 
 

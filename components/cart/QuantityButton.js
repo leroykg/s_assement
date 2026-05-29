@@ -1,7 +1,7 @@
 import React from 'react';
-import { Pressable, StyleSheet } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { StyleSheet } from 'react-native';
 import { Colors } from '../../constants/colors';
+import Button from '../../components/ui/Button';
 
 export default function QuantityButton({
   disabled = false,
@@ -10,39 +10,22 @@ export default function QuantityButton({
   onPress,
 }) {
   return (
-    <Pressable
-      accessibilityRole="button"
+    <Button
       accessibilityLabel={label}
+      contentColor={Colors.primary}
       disabled={disabled}
+      iconName={icon}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.quantityButton,
-        disabled && styles.quantityButtonDisabled,
-        pressed && styles.pressed,
-      ]}
-    >
-      <MaterialCommunityIcons
-        name={icon}
-        size={18}
-        color={disabled ? Colors.disabledForeground : Colors.primary}
-      />
-    </Pressable>
+      size="icon-sm"
+      style={styles.quantityButton}
+      variant="muted"
+    />
   );
 }
 
 const styles = StyleSheet.create({
   quantityButton: {
-    alignItems: 'center',
     backgroundColor: Colors.muted,
-    borderRadius: 8,
-    height: 34,
-    justifyContent: 'center',
-    width: 34,
-  },
-  quantityButtonDisabled: {
-    backgroundColor: Colors.disabled,
-  },
-  pressed: {
-    opacity: 0.74,
+    borderWidth: 0,
   },
 });

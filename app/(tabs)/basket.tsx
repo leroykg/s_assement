@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   View,
@@ -13,6 +12,8 @@ import BasketLineItem from '../../components/cart/BasketLineItem';
 import CheckoutPanel from '../../components/cart/CheckoutPanel';
 import DeliveryProgress from '../../components/cart/DeliveryProgress';
 import EmptyBasket from '../../components/cart/EmptyBasket';
+import Button from '../../components/ui/Button';
+import Dialog, { type DialogButton } from '../../components/ui/Dialog';
 import useBasketStore from '../../stores/basketStore';
 import { Colors } from '../../constants/colors';
 
@@ -25,11 +26,20 @@ import {
 } from '../../helpers/basket';
 import { ThemedText } from '../../components/ui/ThemedText';
 
+type BasketDialog = {
+  buttons: DialogButton[];
+  description: string;
+  title: string;
+};
+
+const EMPTY_DIALOG_BUTTONS: DialogButton[] = [];
+
 export default function BasketScreen() {
   const items = useBasketStore((state) => state.items);
   const decreaseProduct = useBasketStore((state) => state.decreaseProduct);
   const setProductQuantity = useBasketStore((state) => state.setProductQuantity);
   const clearBasket = useBasketStore((state) => state.clearBasket);
+  const [dialog, setDialog] = React.useState<BasketDialog | null>(null);
 
   const basketLines = useMemo(() => getBasketLines(items), [items]);
   const basketTotal = useMemo(() => getBasketTotal(items), [items]);
@@ -37,21 +47,46 @@ export default function BasketScreen() {
   const freeDelivery = hasFreeDelivery(basketTotal);
   const insets = useSafeAreaInsets();
 
+  const handleClearBasket = () => {
+    setDialog({
+      title: 'Clear basket?',
+      description: 'This will remove every item from your basket.',
+      buttons: [
+        {
+          text: 'Cancel',
+          onPress: () => setDialog(null),
+          style: 'cancel',
+        },
+        {
+          text: 'Clear',
+          onPress: () => {
+            setDialog(null);
+            clearBasket();
+          },
+          style: 'destructive',
+        },
+      ],
+    });
+  };
+
   const handleCheckout = () => {
     if (!checkoutReady) {
       return;
     }
 
-    Alert.alert(
-      'Order placed',
-      `Your ${formatCurrency(basketTotal)} grocery order is on its way.`,
-      [
+    setDialog({
+      title: 'Order placed',
+      description: `Your ${formatCurrency(basketTotal)} grocery order is on its way.`,
+      buttons: [
         {
           text: 'Done',
-          onPress: clearBasket,
+          onPress: () => {
+            setDialog(null);
+            clearBasket();
+          },
         },
       ],
-    );
+    });
   };
 
   if (basketLines.length === 0) {
@@ -63,9 +98,20 @@ export default function BasketScreen() {
   return (
       <View style={[styles.basketScreen, { paddingTop: insets.top }]}>
         <StatusBar style="dark" />
-        <ThemedText
-          type="title"
-          style={styles.basketTitle}>Your Basket</ThemedText>
+        <View style={styles.headerRow}>
+          <ThemedText
+            type="title"
+            style={styles.basketTitle}>Your Basket</ThemedText>
+          <Button
+            accessibilityLabel="Clear basket"
+            contentColor={Colors.destructive}
+            iconName="trash-can-outline"
+            size="icon"
+            variant="ghost"
+            onPress={handleClearBasket}
+            style={styles.clearButton}
+          />
+        </View>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -88,6 +134,13 @@ export default function BasketScreen() {
           checkoutReady={checkoutReady}
           onCheckout={handleCheckout}
         />
+        <Dialog
+          visible={dialog !== null}
+          title={dialog?.title || ''}
+          description={dialog?.description || ''}
+          buttons={dialog?.buttons || EMPTY_DIALOG_BUTTONS}
+          onRequestClose={() => setDialog(null)}
+        />
       </View>
     
   );
@@ -102,13 +155,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 128,
   },
+  headerRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+  },
   basketTitle: {
     fontSize: 28,
     color: Colors.foreground,
     fontFamily: 'NotoSans_700Bold',
     fontWeight: '900',
     letterSpacing: 0,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+  },
+  clearButton: {
+    backgroundColor: Colors.card,
+    borderColor: Colors.border,
   },
 });

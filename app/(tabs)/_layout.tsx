@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import BasketTabIcon from '../../components/cart/BasketTabIcon';
 import useBasketStore from '../../stores/basketStore';
@@ -15,6 +17,10 @@ export default function TabsLayout() {
   
   const items = useBasketStore((state) => state.items);
   const basketTotal = useMemo(() => getBasketTotal(items), [items]);
+  const insets = useSafeAreaInsets();
+  const tabBarBottomPadding = Platform.OS === 'android'
+    ? Math.max(insets.bottom, 18)
+    : Math.max(insets.bottom, 8);
 
   return (
     <Tabs
@@ -30,9 +36,9 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: Colors.card,
           borderTopColor: Colors.border,
-          height: 70,
+          height: 62 + tabBarBottomPadding,
           paddingTop: 7,
-          paddingBottom: 8,
+          paddingBottom: tabBarBottomPadding,
         },
       }}
     >

@@ -1,12 +1,13 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 import { formatCurrency } from '../../helpers/basket';
-import { ThemedText } from '../ui/ThemedText';
+import { ThemedText } from '../../components/ui/ThemedText';
 import { Colors } from '../../constants/colors';
 import type { Product, ProductId } from '../../types/product';
+import Button from '../../components/ui/Button';
+import ProductQuantityControl from '../../components/products/ProductQuantityControl';
 
 type ProductCardProps = {
   activeQuantityProductName: ProductId | null;
@@ -49,68 +50,37 @@ export default function ProductCard({
         <Image source={{ uri: product.image }} style={styles.productImage} />
       </Pressable>
       {isEditingQuantity ? (
-        <View style={styles.quantityControl}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Remove one ${product.name}`}
-            onPress={() => onDecreaseProduct(product.name)}
-            style={({ pressed }) => [styles.quantityAction, pressed && styles.pressed]}
-          >
-            <MaterialCommunityIcons name="minus" size={24} color={Colors.primary} />
-          </Pressable>
-          <View style={styles.quantityBadge}>
-            <ThemedText style={styles.quantityText}>{inBasket}</ThemedText>
-          </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Add one ${product.name}`}
-            disabled={atLimit}
-            onPress={() => onAddProduct(product)}
-            style={({ pressed }) => [
-              styles.quantityAction,
-              atLimit && styles.quantityActionDisabled,
-              pressed && styles.pressed,
-            ]}
-          >
-            <MaterialCommunityIcons
-              name="plus"
-              size={24}
-              color={atLimit ? Colors.disabledForeground : Colors.primary}
-            />
-          </Pressable>
+        <View style={styles.quantityControlWrap}>
+          <ProductQuantityControl
+            increaseDisabled={atLimit}
+            onDecrease={() => onDecreaseProduct(product.name)}
+            onIncrease={() => onAddProduct(product)}
+            productName={product.name}
+            quantity={inBasket}
+          />
         </View>
       ) : isInBasket ? (
-        <Pressable
+        <Button
           id="inCartQntyButton"
           nativeID="inCartQntyButton"
-          accessibilityRole="button"
           accessibilityLabel={`Edit ${product.name} quantity`}
           onPress={() => onSelectQuantityProduct(product.name)}
-          style={({ pressed }) => [
-            styles.inCartQnty,
-            pressed && styles.pressed,
-          ]}
+          size="icon-sm"
+          style={styles.inCartQnty}
+          textStyle={styles.inCartQntyText}
         >
-          <ThemedText style={styles.inCartQntyText}>{inBasket}</ThemedText>
-        </Pressable>
+          {inBasket}
+        </Button>
       ) : (
-        <Pressable
-          accessibilityRole="button"
+        <Button
           accessibilityLabel={`Add ${product.name}`}
           disabled={soldOut || atLimit}
+          iconName={soldOut || atLimit ? 'minus-circle-outline' : 'plus'}
           onPress={() => onAddProduct(product)}
-          style={({ pressed }) => [
-            styles.addButton,
-            (soldOut || atLimit) && styles.addButtonDisabled,
-            pressed && styles.pressed,
-          ]}
-        >
-          <MaterialCommunityIcons
-            name={soldOut || atLimit ? 'minus-circle-outline' : 'plus'}
-            size={28}
-            color={soldOut || atLimit ? Colors.disabledForeground : Colors.primary}
-          />
-        </Pressable>
+          size="icon-lg"
+          style={styles.addButton}
+          variant="outline"
+        />
       )}
       <Pressable
         accessibilityRole="button"
@@ -163,7 +133,7 @@ const styles = StyleSheet.create({
   productPrice: {
     color: Colors.foreground,
     fontSize: 17,
-    fontFamily: 'NotoSans_900Black',
+    fontFamily: 'NotoSans_400Regular',
     fontWeight: '800',
     letterSpacing: 0,
   },
@@ -178,28 +148,17 @@ const styles = StyleSheet.create({
     color: Colors.destructive,
   },
   addButton: {
-    alignItems: 'center',
-    borderColor: Colors.primary,
     borderRadius: 20,
-    borderWidth: 1,
     height: 32,
-    justifyContent: 'center',
     position: 'absolute',
     right: 16,
     top: 16,
     width: 32,
     zIndex: 1,
   },
-  addButtonDisabled: {
-    backgroundColor: Colors.disabled,
-    borderColor: Colors.disabled,
-  },
   inCartQnty: {
-    alignItems: 'center',
-    backgroundColor: Colors.primary,
     borderRadius: 20,
     height: 32,
-    justifyContent: 'center',
     position: 'absolute',
     right: 16,
     top: 16,
@@ -207,49 +166,16 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   inCartQntyText: {
-    color: Colors.primaryForeground,
     fontSize: 15,
     fontWeight: '900',
-    letterSpacing: 0,
     lineHeight: 18,
   },
-  quantityControl: {
-    alignItems: 'center',
-    backgroundColor: Colors.disabled,
-    borderRadius: 20,
-    flexDirection: 'row',
-    height: 38,
-    justifyContent: 'space-between',
+  quantityControlWrap: {
     left: 16,
     position: 'absolute',
     right: 16,
     top: 16,
     zIndex: 1,
-  },
-  quantityAction: {
-    alignItems: 'center',
-    height: 38,
-    justifyContent: 'center',
-    width: 44,
-  },
-  quantityActionDisabled: {
-    opacity: 0.5,
-  },
-  quantityBadge: {
-    alignItems: 'center',
-    backgroundColor: Colors.primary,
-    borderRadius: 30,
-    height: 24,
-    justifyContent: 'center',
-    minWidth: 24,
-    paddingHorizontal: 10,
-  },
-  quantityText: {
-    color: Colors.primaryForeground,
-    fontSize: 18,
-    fontWeight: '900',
-    letterSpacing: 0,
-    lineHeight: 22,
   },
   pressed: {
     opacity: 0.74,

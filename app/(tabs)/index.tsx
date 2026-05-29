@@ -1,31 +1,52 @@
 import React from 'react';
-import { Image, StyleSheet, FlatList, View, TouchableOpacity } from 'react-native';
+import { Image, StyleSheet, View, TouchableOpacity } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-import ProductCard from '../../components/products/ProductCard';
 import BasketPromo from '../../components/marketing/BasketPromo';
-import products from '../../data/products.json';
-import useBasketStore from '../../stores/basketStore';
+import FreeDeliveryToast from '../../components/cart/FreeDeliveryToast';
+import ProductGrid from '../../components/products/ProductGrid';
 import { Colors } from '../../constants/colors';
 import { ThemedText } from '../../components/ui/ThemedText';
-import type { Product, ProductId } from '../../types/product';
-
-const productList = products as Product[];
+import { FREE_DELIVERY_MINIMUM, getBasketTotal } from '../../helpers/basket';
+import { getProducts } from '../../helpers/products';
+import useBasketStore from '../../stores/basketStore';
 
 export default function App() {
   const items = useBasketStore((state) => state.items);
-  const addProduct = useBasketStore((state) => state.addProduct);
-  const decreaseProduct = useBasketStore((state) => state.decreaseProduct);
-  const [activeQuantityProductName, setActiveQuantityProductName] =
-    React.useState<ProductId | null>(null);
+  const [showFreeDeliveryToast, setShowFreeDeliveryToast] = React.useState(false);
+  const wasBelowFreeDelivery = React.useRef(true);
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const productList = React.useMemo(() => getProducts({ onlyInStock: false }), []);
+  const basketTotal = React.useMemo(() => getBasketTotal(items), [items]);
+  const dismissFreeDeliveryToast = React.useCallback(() => {
+    setShowFreeDeliveryToast(false);
+  }, []);
+
+  React.useEffect(() => {
+    const hasFreeDelivery = basketTotal >= FREE_DELIVERY_MINIMUM;
+
+    if (hasFreeDelivery && wasBelowFreeDelivery.current) {
+      setShowFreeDeliveryToast(true);
+      wasBelowFreeDelivery.current = false;
+      return;
+    }
+
+    if (!hasFreeDelivery) {
+      wasBelowFreeDelivery.current = true;
+    }
+  }, [basketTotal]);
 
   return (
     <View style={styles.container}>
         <StatusBar style="light" />
+        <FreeDeliveryToast
+          visible={showFreeDeliveryToast}
+          onDismiss={dismissFreeDeliveryToast}
+          topOffset={insets.top + 8}
+        />
         <View style={[styles.safeArea, { paddingTop: insets.top }]}>
           <View style={styles.logo_wrap}>
             <Image
@@ -36,34 +57,19 @@ export default function App() {
           </View>
           <TouchableOpacity onPress={() => router.navigate('/search')}>
             <View style={styles.input}>
+              <MaterialCommunityIcons
+                name="magnify"
+                size={20}
+                color={Colors.placeholder}
+              />
               <ThemedText style={styles.searchPlaceholderText}>Search...</ThemedText>
             </View>
           </TouchableOpacity>
         </View>
         <View style={styles.main_wrap}>
-          <FlatList<Product>
-            data={productList}
-            keyExtractor={(item) => item.name}
-            numColumns={2}
-            showsVerticalScrollIndicator={false}
-            columnWrapperStyle={styles.productRow}
-            contentContainerStyle={styles.listContent}
+          <ProductGrid
+            products={productList}
             ListHeaderComponent={<BasketPromo />}
-            renderItem={({ item, index }) => (
-              <View style={[styles.productTile, index % 2 === 0 ? styles.leftTile : styles.rightTile]}>
-                <ProductCard
-                  activeQuantityProductName={activeQuantityProductName}
-                  product={item}
-                  inBasket={items[item.name]?.quantity || 0}
-                  onAddProduct={() => {
-                    addProduct(item);
-                    setActiveQuantityProductName(item.name);
-                  }}
-                  onDecreaseProduct={decreaseProduct}
-                  onSelectQuantityProduct={setActiveQuantityProductName}
-                />
-              </View>
-            )}
           />
         </View>
       
@@ -97,6 +103,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   input: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
     height: 38,
     margin: 12,
     borderWidth: 0,
@@ -109,21 +118,5 @@ const styles = StyleSheet.create({
     color: Colors.placeholder,
     fontSize: 16,
     lineHeight: 19,
-  },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  productRow: {
-    alignItems: 'stretch',
-  },
-  productTile: {
-    width: '50%',
-  },
-  leftTile: {
-    paddingRight: 5,
-  },
-  rightTile: {
-    paddingLeft: 5,
   },
 });

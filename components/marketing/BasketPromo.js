@@ -1,7 +1,7 @@
 import React from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { ThemedText } from '../ui/ThemedText';
+import { ThemedText } from '../../components/ui/ThemedText';
 import { Colors } from '../../constants/colors';
 
 import {
